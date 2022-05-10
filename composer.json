@@ -1,0 +1,9 @@
+{
+    "name": "igrik/vkr",
+    "autoload": {
+        "psr-4": {
+            "Igrik\\Vkr\\": "src/"
+        }
+    },
+    "require": {}
+}
