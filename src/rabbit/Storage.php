@@ -2,8 +2,6 @@
 
 namespace Igrik\Vkr\Rabbit;
 
-use Splav\API\Rabbit\Helper;
-use Bitrix\Catalog\StoreTable;
 
 /**
  * Класс для изменения/создания складов
@@ -67,31 +65,7 @@ class Storage extends aMessageProcessing
     protected function runProcessMessage()
     {
         $message = $this->getMessageData();
-		$storeId = Helper::getStoreIdBXmlId($message['external_id']);
-		if($storeId == 0){
-			$result = StoreTable::add(['XML_ID' => $message['external_id'], 'TITLE' => $message['name'], 'ADDRESS' => $message['address']]);
-            if (!$result->isSuccess()) {
-                $errors = $result->getErrors();
-                foreach ($errors as $error) {
-                    $this->addError(self::ERROR_CODE_BITRIX, $error->getMessage());
-                }
-            }
-		}elseif ($storeId != 0 && !empty($storeId)){
-			$store = StoreTable::getList(['filter' => ['ID' => $storeId], 'select' => ['TITLE', 'ADDRESS']])->fetchObject();
-			if(!empty($message['name'])) {
-				$store->setTitle($message['name']);
-			}else{
-				$this->addError(self::ERROR_CODE_EMPTY_TITLE_STORAGE);
-			}
-            if(empty($message['address']))
-            {
-                $message['address'] = $message['name'];
-            }
-            $store->setAddress($message['address']);
-			$store->save();
-		}else{
-			$this->addError(self::ERROR_CODE_ELEMENT_NOT_FOUND, 'element');
-		}
+        var_dump($message);
     }
 
     /**

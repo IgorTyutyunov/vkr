@@ -1,8 +1,8 @@
 <?php
 
-namespace Igrik\Vkr\Rabbit;;
+namespace Igrik\Vkr\Rabbit;
 
-use Bitrix\Main\Result;
+use Igrik\Vkr\Result;
 
 abstract class aMessageProcessing
 {
@@ -76,7 +76,7 @@ abstract class aMessageProcessing
 
     ];
 
-    protected \Bitrix\Main\Result $result;
+    protected Result $result;
     protected array $message;
 
     /**
@@ -107,19 +107,20 @@ abstract class aMessageProcessing
     /**
      * Метод возвращает экзеспляр класса \Bitrix\Main\Result. Будет использовать
      * \Bitrix\Main\Result будет использоваться для сбора ошибок и проверки на успешность обработки сообщения
-     * @return \Bitrix\Main\Result
+     * @return Result
      */
-    private final function initResult(): \Bitrix\Main\Result
+    private final function initResult()
     {
+
         $this->result = new Result();
         return $this->result;
     }
 
     /**
      * Метод возвращает объект \Bitrix\Main\Result созданный методом $this->initResult()
-     * @return \Bitrix\Main\Result
+     * @return Result
      */
-    public final function getResult(): \Bitrix\Main\Result
+    public final function getResult(): Result
     {
         return $this->result;
     }
@@ -136,8 +137,7 @@ abstract class aMessageProcessing
     protected final function addError(string $errorCode, string $addMessage = '')
     {
         $messageError = $this->getMessageErrorByMessageCode($errorCode) . $addMessage;
-        $objError = new \Bitrix\Main\Error($messageError, $errorCode);
-        $this->result->addError($objError);
+        $this->result->addError($messageError, $errorCode);
     }
 
     /**
@@ -195,36 +195,11 @@ abstract class aMessageProcessing
      */
     public final function runWork(): bool
     {
-        $dateTimeSendRequest = time();
 
-        global $DB;
-        $DB->StartTransaction();
         if ($this->checkRequireFields()) {
             $this->editMessage();
             $this->runProcessMessage();
         }
-
-        if (!$this->getResult()->isSuccess()) {
-            $DB->Rollback();
-        } else {
-            $DB->Commit();
-        }
-
-        if(\Bitrix\Main\Loader::IncludeModule('splav.logs'))
-        {
-            $path = $this->getLogMethod();
-            $request = $this->getMessageData();
-            $response = $this->getResult()->getErrorMessages();
-            $isSuccess = $this->getResult()->isSuccess() ? 'Y' : 'N';
-
-            $splavLogs = new \Splav\Logs\Logs($path, $request, $response, $isSuccess);
-            if (!empty($dateTimeSendRequest)) {
-                $splavLogs->setDateTimeSendRequest($dateTimeSendRequest);
-            }
-            $splavLogs->setFromERP();
-            $splavLogs->saveLog();
-        }
-
 
         return $this->getResult()->isSuccess();
     }

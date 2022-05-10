@@ -13,3 +13,6 @@ if(!$data = $cache->getCache())
     ];
     $cache->setCache($data);
 }
+
+
+\Igrik\Vkr\Rabbit\RabbitMQ::sendMessage(json_encode($data), 'storage');

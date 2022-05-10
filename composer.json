@@ -2,7 +2,8 @@
     "name": "igrik/vkr",
     "autoload": {
         "psr-4": {
-            "Igrik\\Vkr\\": "src/"
+            "Igrik\\Vkr\\": "src/",
+            "Igrik\\Vkr\\Rabbit\\": "src/rabbit"
         }
     },
     "require": {

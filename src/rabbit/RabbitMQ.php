@@ -1,14 +1,8 @@
 <?php
 namespace Igrik\Vkr\Rabbit;
 
-use Bitrix\Main\ArgumentNullException;
-use Bitrix\Main\ArgumentOutOfRangeException;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Message\AMQPMessage;
-use Psr\Http\Message\ResponseInterface as Response;
-use Psr\Http\Message\ServerRequestInterface as Request;
-use Splav\API\Rabbit\Helper;
-use Bitrix\Main\Config\Option;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Exchange\AMQPExchangeType;
 
@@ -30,12 +24,18 @@ class RabbitMQ
         Storage::ROUTING_KEY => Storage::class,
     ];
 
+    private static function getExchange():string
+    {
+        return "vkr";
+    }
+
     /**
      * Метод отправки сообщения в RabbitMQ
      */
     public static function sendMessage($message, $routingKey)
     {
-        $exchange = Option::get('splav.api.1c','rabbitmq_exchange');
+        self::initRabbitConfig();
+        $exchange = self::getExchange();
 
         $channel = RabbitMQ::getChannel();
         $message = new AMQPMessage($message, array('content_type' => 'application/json', 'delivery_mode' => AMQPMessage::DELIVERY_MODE_PERSISTENT));
@@ -45,17 +45,16 @@ class RabbitMQ
     /**
      * Метод запускает Consumer для прослушивания очереди $queue
      * @param string $queue - название очереди, которую нужно прослушивать
-     * @throws ArgumentNullException
-     * @throws ArgumentOutOfRangeException
      */
     public static function runWorkConsumer(string $queue)
     {
         self::initRabbitConfig();
 
-        /** @var PhpAmqpLib\Channel\AMQPChannel $channel */
+        /** @var \PhpAmqpLib\Channel\AMQPChannel $channel */
         $channel = self::getChannel();
 
-        $channel->basic_consume($queue, 'splav_site', false, false, false, false, 'Splav\API\Rabbit\RabbitMQ::process_message_callback');
+        $channel->basic_consume($queue, 'tyutyunov', false, false, false, false,
+            '\Igrik\Vkr\Rabbit\RabbitMQ::process_message_callback');
         $timeout = 0;
         while ($channel->is_consuming()) {
             try {
@@ -105,19 +104,6 @@ class RabbitMQ
             $arResult['errors'][] = 'Некорректный ключ маршрутизации:' . $routing_key;
         }
 
-        if($arResult['success'] !== true && Option::get('splav.api.1c', "rabbitmq_is_send_mail_error") == 'Y')
-        {
-            $mails = Option::get('splav.api.1c', "rabbitmq_list_mail_error");
-            if(!empty(Option::get('splav.api.1c', "rabbitmq_list_mail_error")))
-            {
-                $template = "Ключ маршрутизации: " . $routing_key . "\n";
-                $template .= "Сообщение: " . $message . "\n";
-                $template .= "Ошибки: " . json_encode($arResult, JSON_UNESCAPED_UNICODE) . "\n";
-
-                mail($mails, 'Ошибка при обработке сообщения', $template);
-            }
-        }
-
         return $arResult;
     }
 
@@ -140,10 +126,10 @@ class RabbitMQ
      */
     private static function getChannel():AMQPChannel
     {
-        $host = Option::get('splav.api.1c','rabbitmq_host');
-        $user = Option::get('splav.api.1c','rabbitmq_login');
-        $password = Option::get('splav.api.1c','rabbitmq_password');
-        $vhost = 'splav';
+        $host = 'localhost';
+        $user = 'guest';
+        $password = 'guest';
+        $vhost = '/';
         $port = 5672;
         $connection = new AMQPStreamConnection($host, $port, $user, $password, $vhost);
 
@@ -162,13 +148,11 @@ class RabbitMQ
 
     /**
      * Метод создания инфраструктуры в Rabbit(exchange, очереди, роутинг)
-     * @throws \Bitrix\Main\ArgumentNullException
-     * @throws \Bitrix\Main\ArgumentOutOfRangeException
      */
     private static function initRabbitConfig()
     {
         $channel = self::getChannel();
-        $exchange = Option::get('splav.api.1c','rabbitmq_exchange');
+        $exchange = self::getExchange();
         if(!empty($exchange))
         {
             $channel->exchange_declare($exchange, AMQPExchangeType::DIRECT, false, true, false);
