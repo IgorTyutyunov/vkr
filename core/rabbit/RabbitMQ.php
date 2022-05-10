@@ -1,5 +1,5 @@
 <?php
-namespace Splav\API\Rabbit;
+namespace Igrik\Vkr\Rabbit;
 
 use Bitrix\Main\ArgumentNullException;
 use Bitrix\Main\ArgumentOutOfRangeException;

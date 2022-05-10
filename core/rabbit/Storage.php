@@ -1,5 +1,6 @@
 <?php
-namespace Splav\API\Rabbit;
+
+namespace Igrik\Vkr\Rabbit;
 
 use Splav\API\Rabbit\Helper;
 use Bitrix\Catalog\StoreTable;
