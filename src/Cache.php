@@ -3,7 +3,7 @@ namespace Igrik\Vkr;
 
 class Cache
 {
-    public \Redis $redis;
+    public static \Redis $redis;
     private string $key;
     private int $ttl;
 
@@ -12,25 +12,33 @@ class Cache
      * @param int $ttl - время жизни кеша
      * @param string $tag - теги кеша, можно использовать для удаления кеша по тегу
      */
-    public function __construct(array $keyData, int $ttl = 3600, string $tag = '')
+    public function __construct(array $keyData = [], int $ttl = 3600, string $tag = '')
     {
-        $this->redis = new \Redis();
-        $this->redis->pconnect('localhost');
-        $keyData[] = $ttl;
-
-        if(!empty($tag))
+        if(empty(self::$redis))
         {
-            $keyData[] = $tag;
+            self::$redis = new \Redis();
+            self::$redis->pconnect('localhost');
         }
 
-        $this->key = md5(serialize($keyData));
-
-        if(!empty($tag))
+        if(!empty($keyData))
         {
-            $this->key = "TAG_" . $tag . ":" . $this->key;
+            $keyData[] = $ttl;
+
+            if(!empty($tag))
+            {
+                $keyData[] = $tag;
+            }
+
+            $this->key = md5(serialize($keyData));
+
+            if(!empty($tag))
+            {
+                $this->key = "TAG_" . $tag . ":" . $this->key;
+            }
+
+            $this->ttl = $ttl;
         }
 
-        $this->ttl = $ttl;
     }
 
     /**
@@ -42,7 +50,7 @@ class Cache
     {
         if($this->isExists())
         {
-            return unserialize($this->redis->get($this->key));
+            return unserialize(self::$redis->get($this->key));
         }
 
         return false;
@@ -53,7 +61,54 @@ class Cache
      */
     public function setCache(array $data)
     {
-        $this->redis->set($this->key, serialize($data), $this->ttl);
+        self::$redis->set($this->key, serialize($data), $this->ttl);
+    }
+
+    /**
+     * Метод очищает кеш по тегу
+     *
+     * @param string $tag - тег кеша
+     *
+     * @return void
+     */
+    public function clearCacheByTag(string $tag): void
+    {
+        self::$redis->del($this->getKeysByTag($tag));
+    }
+
+    /**
+     * Метод очищает кеш по тегу
+     *
+     * @param string $tag - тег кеша
+     *
+     * @return array
+     */
+    public function getCacheByTag(string $tag): array
+    {
+        $arKeys = $this->getKeysByTag($tag);
+
+        $arResult = [];
+
+        foreach ($arKeys as $key)
+        {
+            if($data = self::$redis->get($key));
+            {
+                $arResult[] = $data;
+            }
+        }
+
+        return $arResult;
+    }
+
+    /**
+     * Метод возвращает ключи кеша, которые соответствуют тегу
+     * @param string $tag - тег кеша
+     *
+     * @return array - массив ключей
+     */
+    private function getKeysByTag(string $tag):array
+    {
+        return self::$redis->keys("TAG_{$tag}*");
     }
 
     /**
@@ -62,7 +117,7 @@ class Cache
      */
     private function isExists():bool
     {
-       return $this->redis->exists($this->key);
+       return self::$redis->exists($this->key);
     }
 
 }

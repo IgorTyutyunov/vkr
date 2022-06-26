@@ -13,6 +13,14 @@ if(!$data = $cache->getCache())
     ];
     $cache->setCache($data);
 }
+$cache = new \Igrik\Vkr\Cache([1], 50000, 'tag_1');
+if(!$data = $cache->getCache())
+{
+    $data = [
+        'Орёл', 'Брянск',
+    ];
+    $cache->setCache($data);
+}
 
-
-\Igrik\Vkr\Rabbit\RabbitMQ::sendMessage(json_encode($data), 'storage');
+var_dump($cache->getCacheByTag('tag_1'));
+//\Igrik\Vkr\Rabbit\RabbitMQ::sendMessage(json_encode($data), 'storage');
