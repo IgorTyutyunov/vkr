@@ -18,11 +18,16 @@ class Connector
     const MAX_USAGE_MEMORY = 128000000;
 
     /**
-     * Соответствие ключей маршрутизации и классов для обработки сообщений
+     * Метод возвращает массив соответствий ключей маршрутизации сообщений и классов для обработки сообщений
+     *
+     * @return array
      */
-    const MAPPING_RK_CLASS = [
-        Storage::ROUTING_KEY => Storage::class,
-    ];
+    private static function getMappingRoutingKeyClass():array
+    {
+        return [
+            Storage::ROUTING_KEY => Storage::class,
+        ];
+    }
 
     private static function getExchange():string
     {
@@ -54,19 +59,10 @@ class Connector
         $channel = self::getChannel();
 
         $channel->basic_consume($queue, 'tyutyunov', false, false, false, false,
-            '\Igrik\Vkr\Rabbit\RabbitMQ::process_message_callback');
+            '\Igrik\Vkr\AMQP\Connector::process_message_callback');
         $timeout = 0;
         while ($channel->is_consuming()) {
-            try {
-                $channel->wait(null, false, $timeout);
-            } catch (\Exception $e) {
-                if (!is_null($channel)) {
-                    $channel->close();
-                }
-            }
-            if (memory_get_usage(true) > self::MAX_USAGE_MEMORY) {
-                break;
-            }
+            $channel->wait(null, false, $timeout);
         }
     }
 
@@ -112,9 +108,9 @@ class Connector
      */
     private static function getClassNameByRoutingKey($routingKey):string
     {
-        if(isset(self::MAPPING_RK_CLASS[$routingKey]))
+        if(isset(self::getMappingRoutingKeyClass()[$routingKey]))
         {
-            return self::MAPPING_RK_CLASS[$routingKey];
+            return self::getMappingRoutingKeyClass()[$routingKey];
         }
 
         return '';
@@ -160,7 +156,8 @@ class Connector
             /**
              * @var aMessageProcessing $CLASS
              */
-            foreach (self::MAPPING_RK_CLASS as $CLASS)
+            $arRk = self::getMappingRoutingKeyClass();
+            foreach ($arRk as $CLASS)
             {
                 $queue = $CLASS::getQueueName();
                 $routingKey = $CLASS::getRoutingKey();
