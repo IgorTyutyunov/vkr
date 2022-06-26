@@ -1,13 +1,13 @@
 <?php
 
-namespace Igrik\Vkr\Rabbit;
+namespace Igrik\Vkr\AMQP;
 
 
 /**
  * Класс для изменения/создания складов
  *
  * Class Storage
- * @package Splav\API\Rabbit
+ * @package Splav\API\AMQP
  */
 class Storage extends aMessageProcessing
 {

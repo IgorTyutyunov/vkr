@@ -1,6 +1,6 @@
 <?php
 
-namespace Igrik\Vkr\Rabbit;
+namespace Igrik\Vkr\AMQP;
 
 use Igrik\Vkr\Result;
 

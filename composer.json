@@ -3,7 +3,7 @@
     "autoload": {
         "psr-4": {
             "Igrik\\Vkr\\": "src/",
-            "Igrik\\Vkr\\Rabbit\\": "src/rabbit"
+            "Igrik\\Vkr\\AMQP\\": "src/amqp"
         }
     },
     "require": {

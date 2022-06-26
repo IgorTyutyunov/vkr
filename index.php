@@ -23,4 +23,4 @@ if(!$data = $cache->getCache())
 }
 
 var_dump($cache->getCacheByTag('tag_1'));
-//\Igrik\Vkr\Rabbit\RabbitMQ::sendMessage(json_encode($data), 'storage');
+//\Igrik\Vkr\AMQP\RabbitMQ::sendMessage(json_encode($data), 'storage');

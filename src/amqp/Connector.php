@@ -1,5 +1,5 @@
 <?php
-namespace Igrik\Vkr\Rabbit;
+namespace Igrik\Vkr\AMQP;
 
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Message\AMQPMessage;
@@ -11,9 +11,9 @@ use PhpAmqpLib\Exchange\AMQPExchangeType;
  * Тут же будет метод, который будет запускаться в процессе для чтения сообщений из очереди.
  *
  * Class RabbitMQ
- * @package Splav\API\Rabbit
+ * @package Splav\API\AMQP
  */
-class RabbitMQ
+class Connector
 {
     const MAX_USAGE_MEMORY = 128000000;
 
@@ -37,7 +37,7 @@ class RabbitMQ
         self::initRabbitConfig();
         $exchange = self::getExchange();
 
-        $channel = RabbitMQ::getChannel();
+        $channel = self::getChannel();
         $message = new AMQPMessage($message, array('content_type' => 'application/json', 'delivery_mode' => AMQPMessage::DELIVERY_MODE_PERSISTENT));
         $channel->basic_publish($message, $exchange, $routingKey);
     }
@@ -147,7 +147,7 @@ class RabbitMQ
     }
 
     /**
-     * Метод создания инфраструктуры в Rabbit(exchange, очереди, роутинг)
+     * Метод создания инфраструктуры в AMQP(exchange, очереди, роутинг)
      */
     private static function initRabbitConfig()
     {
