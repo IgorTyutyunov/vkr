@@ -9,27 +9,27 @@ abstract class aMessageProcessing
     /**
      * Код ошибки - пустое сообщение
      */
-    const ERROR_CODE_EMPTY_BODY = "BRND_EMPTY_BODY";
+    const ERROR_CODE_EMPTY_BODY = "EMPTY_BODY";
 
     /**
      * Код ошибки -
      */
-    const ERROR_CODE_NOT_ACCEPT_VALUE = "BRND_NOT_ACCEPT_VALUE";
+    const ERROR_CODE_NOT_ACCEPT_VALUE = "NOT_ACCEPT_VALUE";
 
     /**
      * Код ошибки - не передан обязательный параметр
      */
-    const ERROR_CODE_NOT_ISSET_REQUIRE_FIELD = "BRND_NOT_ISSET_REQUIRE_FIELD";
+    const ERROR_CODE_NOT_ISSET_REQUIRE_FIELD = "NOT_ISSET_REQUIRE_FIELD";
 
     /**
      * Код ошибки - элемент не найден
      */
-    const ERROR_CODE_ELEMENT_NOT_FOUND = "BRND_ELEMENT_NOT_FOUND";
+    const ERROR_CODE_ELEMENT_NOT_FOUND = "ELEMENT_NOT_FOUND";
 
     /**
      * Код ошибки - прочие ошибки, для которых не хочется создавать что-то отдельное
      */
-    const ERROR_CODE_OTHER_ERROR = "BRND_OTHER_ERROR";
+    const ERROR_CODE_OTHER_ERROR = "OTHER_ERROR";
 
     /**
      * Код ошибки - какая-то ошибка, которую выдал битрикс
@@ -39,12 +39,12 @@ abstract class aMessageProcessing
 	/**
 	 * Код ошибки - если пустое название склада
 	*/
-	const ERROR_CODE_EMPTY_TITLE_STORAGE = "BRND_EMPTY_TITLE_STORAGE";
+	const ERROR_CODE_EMPTY_TITLE_STORAGE = "EMPTY_TITLE_STORAGE";
 
 	/**
 	 * Код ошибки - если пусто значение внешнего кода
 	*/
-	const ERROR_CODE_EMPTY_EXTERNAL_ID = "BRND_EMPTY_EXTERNAL_ID";
+	const ERROR_CODE_EMPTY_EXTERNAL_ID = "EMPTY_EXTERNAL_ID";
     /**
      * Массив с описанием ошибок
      */
@@ -195,12 +195,7 @@ abstract class aMessageProcessing
      */
     public final function runWork(): bool
     {
-
-        if ($this->checkRequireFields()) {
-            $this->editMessage();
-            $this->runProcessMessage();
-        }
-
+        $this->runProcessMessage();
         return $this->getResult()->isSuccess();
     }
 
@@ -266,15 +261,5 @@ abstract class aMessageProcessing
      * @return string
      */
     abstract static function getQueueName():string;
-
-    /**
-     * Метод возвращает индентификатор метод для логирования
-     *
-     * @return string
-     */
-    public function getLogMethod():string
-    {
-        return 'rabbit_' . $this->getRoutingKey();
-    }
-
+    
 }

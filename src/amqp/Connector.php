@@ -58,7 +58,7 @@ class Connector
         /** @var \PhpAmqpLib\Channel\AMQPChannel $channel */
         $channel = self::getChannel();
 
-        $channel->basic_consume($queue, 'tyutyunov', false, false, false, false,
+        $channel->basic_consume($queue, '', false, false, false, false,
             '\Igrik\Vkr\AMQP\Connector::process_message_callback');
         $timeout = 0;
         while ($channel->is_consuming()) {
@@ -71,7 +71,7 @@ class Connector
      */
     public static function process_message_callback(\PhpAmqpLib\Message\AMQPMessage $message)
     {
-        self::process_message($message->getRoutingKey(),$message->getBody());
+        self::processMessage($message->getRoutingKey(),$message->getBody());
         $message->ack();
     }
 
@@ -82,7 +82,7 @@ class Connector
      * @param string $message
      * @return array
      */
-    private static function process_message(string $routing_key, string $message):array
+    private static function processMessage(string $routing_key, string $message):array
     {
         $arResult = ['success' => false];
         /**
@@ -117,7 +117,7 @@ class Connector
     }
 
     /**
-     * Метод возвращает объект AMQPChannel
+     * Метод создания подключения с брокером сообщений
      * @return AMQPChannel
      */
     private static function getChannel():AMQPChannel
@@ -143,7 +143,7 @@ class Connector
     }
 
     /**
-     * Метод создания инфраструктуры в AMQP(exchange, очереди, роутинг)
+     * Метод создания инфраструктуры в брокере сообщений
      */
     private static function initRabbitConfig()
     {
@@ -184,7 +184,7 @@ class Connector
 
         $message = $request->getBody();
 
-        $result = self::process_message($routing_key['routing_key'], $message);
+        $result = self::processMessage($routing_key['routing_key'], $message);
 
         $response->getBody()->write(json_encode($result,JSON_UNESCAPED_UNICODE));
 
